@@ -9,23 +9,33 @@
 <body>
     <div class="container">
         <h1>Study Planner</h1>
-
-        <div class="task-form">
+        <div>
             <input type="text" id="description" placeholder="Enter task description" required>
             <input type="date" id="deadline" required>
             <button onclick="addTask()">Add Task</button>
         </div>
-
-        <div class="options">
-            <button onclick="completeTask()">Complete Task</button>
-            <button onclick="undoLastCompletedTask()">Undo Last Completed Task</button>
-            <button onclick="clearAllTasks()">Clear All Tasks</button>
-            <button onclick="displayUpcomingTasks()">Display Upcoming Tasks</button>
-        </div>
-
+        <h2>Tasks</h2>
         <div id="task-list"></div>
+        <h2>Completed Tasks</h2>
+        <div id="completed-task-list"></div>
+        <h2>Manage Tasks</h2>
+        <div>
+            <input type="number" id="complete-task-index" placeholder="Complete task #">
+            <button onclick="completeTask()">Complete Task</button>
+        </div>
+        <div>
+            <input type="number" id="delete-task-index" placeholder="Delete task #">
+            <button onclick="deleteTask()">Delete Task</button>
+        </div>
+        <div>
+            <input type="number" id="edit-task-index" placeholder="Edit task #">
+            <input type="text" id="new-description" placeholder="New task description">
+            <input type="date" id="new-deadline" placeholder="New deadline">
+            <button onclick="editTask()">Edit Task</button>
+        </div>
+        <button onclick="clearAllTasks()">Clear All Tasks</button>
+        <button onclick="showProgress()">Show Progress</button>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
