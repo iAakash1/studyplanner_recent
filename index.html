@@ -10,37 +10,46 @@
     <div class="container">
         <h1>Study Planner</h1>
 
-        <!-- Input Fields -->
-        <label for="description">Task Description:</label>
-        <input type="text" id="description">
+        <!-- Tab Buttons -->
+        <div class="tabs">
+            <button onclick="showTab('addTaskTab')">Add Task</button>
+            <button onclick="showTab('plannedTasksTab')">Planned Tasks</button>
+            <button onclick="showTab('completedTasksTab')">Completed Tasks</button>
+        </div>
 
-        <label for="deadline">Deadline (YYYY-MM-DD):</label>
-        <input type="date" id="deadline">
+        <!-- Add Task Tab -->
+        <div id="addTaskTab" class="tab-content">
+            <label for="description">Task Description:</label>
+            <input type="text" id="description">
 
-        <!-- Buttons for Each Function -->
-        <button onclick="addTask()">Add Task</button>
-        <button onclick="completeTask()">Complete Task</button>
-        <button onclick="undoCompletedTask()">Undo Completed Task</button>
-        <button onclick="showProgress()">Show Progress</button>
-        <button onclick="displayPlannedTasks()">Display Planned Tasks</button>
-        <button onclick="displayCompletedTasks()">Display Completed Tasks</button>
-        <button onclick="deleteTask()">Delete Task</button>
-        <button onclick="editTask()">Edit Task</button>
-        <button onclick="clearAllTasks()">Clear All Tasks</button>
-        <button onclick="showUpcomingDeadline()">Show Upcoming Deadline</button>
+            <label for="deadline">Deadline (YYYY-MM-DD):</label>
+            <input type="date" id="deadline">
+
+            <button onclick="addTask()">Add Task</button>
+            <button onclick="showUpcomingDeadline()">Show Upcoming Deadline</button>
+            <button onclick="clearAllTasks()">Clear All Tasks</button>
+        </div>
+
+        <!-- Planned Tasks Tab -->
+        <div id="plannedTasksTab" class="tab-content">
+            <button onclick="completeTask()">Complete Task</button>
+            <button onclick="deleteTask()">Delete Task</button>
+            <div id="plannedTasksOutput"></div>
+        </div>
+
+        <!-- Completed Tasks Tab -->
+        <div id="completedTasksTab" class="tab-content">
+            <button onclick="undoCompletedTask()">Undo Completed Task</button>
+            <div id="completedTasksOutput"></div>
+        </div>
 
         <!-- Output Section -->
         <div class="output">
             <h3>Output:</h3>
             <div id="output"></div>
         </div>
-
-        <!-- Task List -->
-        <div class="tasks">
-            <h3>Task Lists:</h3>
-            <div id="tasks"></div>
-        </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
