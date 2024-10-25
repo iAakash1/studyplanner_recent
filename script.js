@@ -20,20 +20,26 @@ function addTask() {
 function displayAllTasks() {
     const taskList = document.getElementById("task-list");
     const completedTaskList = document.getElementById("completed-task-list");
-
-    taskList.innerHTML = tasks.map((task, index) => `
+    
+    // Build HTML for tasks
+    const taskHTML = tasks.map((task, index) => `
         <div class="task-item">
             <strong>Task ${index + 1}:</strong> ${task.description} <br>
             <strong>Deadline:</strong> ${task.deadline}
         </div>
     `).join('');
 
-    completedTaskList.innerHTML = completedTasks.map((task, index) => `
+    // Build HTML for completed tasks
+    const completedHTML = completedTasks.map((task, index) => `
         <div class="task-item completed">
             <strong>Completed Task ${index + 1}:</strong> ${task.description} <br>
             <strong>Deadline:</strong> ${task.deadline}
         </div>
     `).join('');
+
+    // Update the DOM once
+    taskList.innerHTML = taskHTML;
+    completedTaskList.innerHTML = completedHTML;
 }
 
 // Complete a task
@@ -92,3 +98,19 @@ function showProgress() {
     const completed = completedTasks.length;
     alert(`You have completed ${completed} out of ${totalTasks} tasks.`);
 }
+
+// Debounce function
+function debounce(func, delay) {
+    let timeoutId;
+    return function (...args) {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
+        timeoutId = setTimeout(() => {
+            func.apply(null, args);
+        }, delay);
+    };
+}
+
+// Event listeners with debounce
+document.querySelector("button").onclick = debounce(addTask, 300);
