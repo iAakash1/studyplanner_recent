@@ -1,4 +1,4 @@
-/* style.css */
+/* General styling */
 body {
     font-family: Arial, sans-serif;
     display: flex;
@@ -21,38 +21,42 @@ h1, h3 {
     text-align: center;
 }
 
-label {
-    font-weight: bold;
+/* Tab styling */
+.tabs {
+    display: flex;
+    justify-content: space-between;
 }
 
-input, button {
-    display: block;
-    width: 100%;
-    margin: 5px 0 15px;
-    padding: 8px;
-    font-size: 16px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-
-button {
-    cursor: pointer;
+.tabs button {
+    width: 32%;
+    padding: 10px;
     background-color: #007bff;
     color: #fff;
     border: none;
+    cursor: pointer;
+    border-radius: 4px 4px 0 0;
     transition: background-color 0.3s;
 }
 
-button:hover {
+.tabs button:hover {
     background-color: #0056b3;
 }
 
-.output, .tasks {
-    margin-top: 20px;
+/* Tab content */
+.tab-content {
+    display: none;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
 }
 
-#output, #tasks {
-    font-size: 14px;
-    color: #333;
-    white-space: pre-wrap;
+/* Visible tab content */
+.tab-content.active {
+    display: block;
+}
+
+/* Output styling */
+.output {
+    margin-top: 20px;
 }
