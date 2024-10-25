@@ -10,7 +10,6 @@
     <div class="container">
         <h1>📚 Study Planner</h1>
         
-        <!-- Form for Adding a Task -->
         <div class="task-form">
             <label for="description">Task Description:</label>
             <input type="text" id="description" placeholder="Enter task description">
@@ -21,7 +20,6 @@
             <button onclick="addTask()">➕ Add Task</button>
         </div>
 
-        <!-- Progress Bar -->
         <div class="progress-bar">
             <span>Progress</span>
             <div class="bar">
@@ -31,15 +29,11 @@
             <span id="progress-output">0% completed</span>
         </div>
 
-        <!-- Option Buttons for Different Actions -->
         <div class="options">
             <button onclick="completeTask()">✅ Complete Task</button>
             <button onclick="undoLastCompletedTask()">↩️ Undo Last Completed Task</button>
             <button onclick="displayAllTasks()">📋 Display All Tasks</button>
             <button onclick="displayCompletedTasks()">📂 Show Completed Tasks</button>
-            <button onclick="deleteTask()">🗑️ Delete Task</button>
-            <button onclick="editTask()">✏️ Edit Task</button>
-            <button onclick="clearTasks()">🧹 Clear All Tasks</button>
             <button onclick="displayUpcomingDeadlineTask()">📅 Upcoming Deadline</button>
         </div>
 
