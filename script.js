@@ -1,91 +1,120 @@
-document.addEventListener("DOMContentLoaded", () => {
-    console.log("DOM fully loaded and parsed");
+let tasks = [];
+let completedTasks = [];
 
-    const studyPlanner = new StudyPlanner();
+function addTask() {
+    const description = document.getElementById("description").value;
+    const deadline = document.getElementById("deadline").value;
 
-    function updateProgress() {
-        const totalTasks = studyPlanner.getTotalTasks();
-        const completedTasks = studyPlanner.getCompletedTasks();
-        const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+    if (description && deadline) {
+        tasks.push({ description, deadline, completed: false });
+        document.getElementById("description").value = "";
+        document.getElementById("deadline").value = "";
+        alert("Task added!");
+        displayAllTasks();
+    } else {
+        alert("Please fill in both fields.");
+    }
+}
 
-        document.getElementById("completed-bar").style.width = progress + "%";
-        document.getElementById("pending-bar").style.width = (100 - progress) + "%";
-        document.getElementById("progress-output").textContent = `${Math.round(progress)}% completed`;
+function completeTask() {
+    const taskIndex = prompt("Enter the task number to complete:") - 1;
+    if (taskIndex >= 0 && taskIndex < tasks.length) {
+        const task = tasks[taskIndex];
+        task.completed = true;
+        completedTasks.push(task);
+        tasks.splice(taskIndex, 1);
+        alert("Task completed!");
+        displayAllTasks();
+    } else {
+        alert("Invalid task number.");
+    }
+}
 
-        console.log("Progress updated:", progress);
+function undoLastCompletedTask() {
+    if (completedTasks.length === 0) {
+        alert("No completed tasks to undo.");
+        return;
     }
 
-    window.addTask = function() {
-        const description = document.getElementById("description").value;
-        const deadline = document.getElementById("deadline").value;
-        if (description && deadline) {
-            studyPlanner.addTask(description, deadline);
-            alert("Task added!");
-            updateProgress();
-            renderTasks();
-        } else {
-            alert("Please fill in both description and deadline.");
-        }
-    };
+    const task = completedTasks.pop();
+    task.completed = false;
+    tasks.unshift(task);
+    alert("Last completed task undone!");
+    displayAllTasks();
+}
 
-    window.completeTask = function() {
-        studyPlanner.completeTask();
-        updateProgress();
-        renderTasks();
-    };
+function displayAllTasks() {
+    const taskList = document.getElementById("task-list");
+    taskList.innerHTML = "";  // Clear existing content
 
-    window.undoLastCompletedTask = function() {
-        studyPlanner.undoLastCompletedTask();
-        updateProgress();
-        renderTasks();
-    };
+    tasks.forEach((task, index) => {
+        const taskItem = document.createElement("div");
+        taskItem.className = "task-item";
+        taskItem.innerHTML = `
+            <strong>Task ${index + 1}:</strong> ${task.description} <br>
+            <strong>Deadline:</strong> ${task.deadline}
+            <button onclick="deleteTask(${index})">Delete</button>
+            <button onclick="editTask(${index})">Edit</button>
+        `;
+        taskList.appendChild(taskItem);
+    });
 
-    window.displayAllTasks = function() {
-        renderTasks();
-    };
+    completedTasks.forEach((task, index) => {
+        const taskItem = document.createElement("div");
+        taskItem.className = "task-item completed";
+        taskItem.innerHTML = `
+            <strong>Completed Task ${tasks.length + index + 1}:</strong> ${task.description} <br>
+            <strong>Deadline:</strong> ${task.deadline}
+        `;
+        taskList.appendChild(taskItem);
+    });
+}
 
-    window.displayCompletedTasks = function() {
-        renderTasks(true);
-    };
+function deleteTask(index) {
+    tasks.splice(index, 1);
+    displayAllTasks();
+}
 
-    function renderTasks(showCompleted = false) {
-        const tasks = showCompleted ? studyPlanner.getCompletedTasksList() : studyPlanner.getTasks();
-        const output = document.getElementById("output");
-        output.innerHTML = tasks.length
-            ? tasks.map(task => `
-                <div class="task-card ${task.completed ? 'completed' : ''}">
-                    <div>
-                        <strong>${task.description}</strong><br>
-                        <small>Deadline: ${task.deadline}</small>
-                    </div>
-                    <button onclick="deleteTask('${task.description}')">🗑️</button>
-                </div>
-            `).join('')
-            : `<p>No ${showCompleted ? 'completed' : ''} tasks available.</p>`;
-
-        console.log("Tasks rendered:", tasks);
+function editTask(index) {
+    const newDescription = prompt("Enter new task description:", tasks[index].description);
+    const newDeadline = prompt("Enter new deadline (YYYY-MM-DD):", tasks[index].deadline);
+    
+    if (newDescription && newDeadline) {
+        tasks[index].description = newDescription;
+        tasks[index].deadline = newDeadline;
+        displayAllTasks();
+    } else {
+        alert("Both fields are required.");
     }
+}
 
-    window.deleteTask = function(description) {
-        studyPlanner.deleteTask(description);
-        alert(`Task "${description}" deleted!`);
-        renderTasks();
-        updateProgress();
-    };
+function clearAllTasks() {
+    if (confirm("Are you sure you want to clear all tasks?")) {
+        tasks = [];
+        completedTasks = [];
+        alert("All tasks cleared!");
+        displayAllTasks();
+    }
+}
 
-    window.displayUpcomingDeadlineTask = function() {
-        const upcomingTask = studyPlanner.getUpcomingDeadlineTask();
-        document.getElementById("output").innerHTML = upcomingTask
-            ? `
-                <div class="task-card">
-                    <strong>Next Deadline:</strong> ${upcomingTask.description}<br>
-                    <small>Deadline: ${upcomingTask.deadline}</small>
-                </div>`
-            : "<p>No upcoming tasks with deadlines.</p>";
+function displayUpcomingTasks() {
+    const today = new Date().toISOString().split("T")[0];
+    const upcomingTasks = tasks.filter(task => task.deadline >= today);
+    
+    const taskList = document.getElementById("task-list");
+    taskList.innerHTML = "";  // Clear existing content
 
-        console.log("Upcoming deadline task displayed:", upcomingTask);
-    };
-
-    // Initial Progress Update
-    updateProgress();
-});
+    if (upcomingTasks.length === 0) {
+        taskList.innerHTML = "<div>No upcoming tasks found.</div>";
+    } else {
+        upcomingTasks.forEach((task, index) => {
+            const taskItem = document.createElement("div");
+            taskItem.className = "task-item";
+            taskItem.innerHTML = `
+                <strong>Upcoming Task ${index + 1}:</strong> ${task.description} <br>
+                <strong>Deadline:</strong> ${task.deadline}
+            `;
+            taskList.appendChild(taskItem);
+        });
+    }
+}
