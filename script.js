@@ -1,137 +1,18 @@
-// script.js
-class Task {
-    constructor(description, deadline) {
-        this.description = description;
-        this.deadline = deadline;
-        this.completed = false;
-        this.next = null;
-    }
-}
+// Task and StudyPlanner classes (same as previous version)
 
-class StudyPlanner {
-    constructor() {
-        this.top = null;
-        this.completedTop = null;
-    }
-
-    isEmpty() {
-        return this.top === null;
-    }
-
-    topDeadline() {
-        return this.isEmpty() ? "zzzz" : this.top.deadline;
-    }
-
-    addTask(description, deadline) {
-        const newTask = new Task(description, deadline);
-        if (this.isEmpty() || this.topDeadline() >= deadline) {
-            newTask.next = this.top;
-            this.top = newTask;
-            return;
-        }
-
-        let temp = this.top.next;
-        let prev = this.top;
-        while (temp && temp.deadline < deadline) {
-            prev = temp;
-            temp = temp.next;
-        }
-        prev.next = newTask;
-        newTask.next = temp;
-    }
-
-    completeTask(description) {
-        let temp = this.top;
-        let prev = null;
-
-        while (temp) {
-            if (temp.description === description) {
-                if (temp === this.top) {
-                    this.top = this.top.next;
-                } else {
-                    prev.next = temp.next;
-                }
-                this.pushCompleted(temp.description, temp.deadline);
-                return `Task completed: ${description}`;
-            }
-            prev = temp;
-            temp = temp.next;
-        }
-        return `Task not found!`;
-    }
-
-    pushCompleted(description, deadline) {
-        const newTask = new Task(description, deadline);
-        newTask.completed = true;
-        newTask.next = this.completedTop;
-        this.completedTop = newTask;
-    }
-
-    undoCompletedTask() {
-        if (!this.completedTop) return "No tasks completed yet!";
-        const undoneTask = this.completedTop;
-        this.addTask(undoneTask.description, undoneTask.deadline);
-        this.completedTop = this.completedTop.next;
-        return `Task undone: ${undoneTask.description}`;
-    }
-
-    displayPlannedTasks() {
-        let temp = this.top;
-        if (this.isEmpty()) return "No tasks planned!";
-        let taskList = "";
-        while (temp) {
-            taskList += `Description: ${temp.description}, Deadline: ${temp.deadline}\n`;
-            temp = temp.next;
-        }
-        return taskList;
-    }
-
-    displayCompletedTasks() {
-        let temp = this.completedTop;
-        if (!temp) return "No tasks completed yet!";
-        let taskList = "";
-        while (temp) {
-            taskList += `Description: ${temp.description}, Deadline: ${temp.deadline}\n`;
-            temp = temp.next;
-        }
-        return taskList;
-    }
-
-    deleteTask(description) {
-        if (this.isEmpty()) return "No tasks planned!";
-        let temp = this.top;
-        let prev = null;
-
-        while (temp) {
-            if (temp.description === description) {
-                if (temp === this.top) {
-                    this.top = this.top.next;
-                } else {
-                    prev.next = temp.next;
-                }
-                return `Task "${description}" deleted.`;
-            }
-            prev = temp;
-            temp = temp.next;
-        }
-        return `Task "${description}" not found.`;
-    }
-
-    clearAllTasks() {
-        this.top = null;
-        return "All tasks cleared!";
-    }
-
-    showUpcomingDeadline() {
-        if (this.isEmpty()) return "No tasks planned!";
-        return `Upcoming Task: ${this.top.description}, Deadline: ${this.top.deadline}`;
-    }
-}
-
-// Creating the StudyPlanner instance
 const planner = new StudyPlanner();
 
-// Connecting functions to HTML elements
+// Switch between tabs
+function showTab(tabId) {
+    const tabs = document.querySelectorAll('.tab-content');
+    tabs.forEach(tab => tab.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+
+    if (tabId === 'plannedTasksTab') displayPlannedTasks();
+    if (tabId === 'completedTasksTab') displayCompletedTasks();
+}
+
+// Adding tasks
 function addTask() {
     const description = document.getElementById("description").value;
     const deadline = document.getElementById("deadline").value;
@@ -142,8 +23,53 @@ function addTask() {
     }
 }
 
+// Completing tasks
 function completeTask() {
     const description = document.getElementById("description").value;
     const result = planner.completeTask(description);
     document.getElementById("output").innerText = result;
+    displayPlannedTasks();
 }
+
+// Undo completed tasks
+function undoCompletedTask() {
+    const result = planner.undoCompletedTask();
+    document.getElementById("output").innerText = result;
+    displayCompletedTasks();
+}
+
+// Display planned tasks in tab
+function displayPlannedTasks() {
+    const plannedTasksOutput = planner.displayPlannedTasks();
+    document.getElementById("plannedTasksOutput").innerText = plannedTasksOutput || "No tasks planned!";
+}
+
+// Display completed tasks in tab
+function displayCompletedTasks() {
+    const completedTasksOutput = planner.displayCompletedTasks();
+    document.getElementById("completedTasksOutput").innerText = completedTasksOutput || "No tasks completed yet!";
+}
+
+// Deleting tasks
+function deleteTask() {
+    const description = document.getElementById("description").value;
+    const result = planner.deleteTask(description);
+    document.getElementById("output").innerText = result;
+    displayPlannedTasks();
+}
+
+// Show upcoming deadline
+function showUpcomingDeadline() {
+    const result = planner.showUpcomingDeadline();
+    document.getElementById("output").innerText = result;
+}
+
+// Clear all tasks
+function clearAllTasks() {
+    const result = planner.clearAllTasks();
+    document.getElementById("output").innerText = result;
+    displayPlannedTasks();
+}
+
+// Initialize with the 'Add Task' tab active
+showTab('addTaskTab');
