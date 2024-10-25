@@ -1,3 +1,4 @@
+// script.js
 class Task {
     constructor(description, deadline) {
         this.description = description;
@@ -17,172 +18,132 @@ class StudyPlanner {
         return this.top === null;
     }
 
+    topDeadline() {
+        return this.isEmpty() ? "zzzz" : this.top.deadline;
+    }
+
     addTask(description, deadline) {
         const newTask = new Task(description, deadline);
-        if (this.isEmpty()) {
-            this.top = newTask;
-        } else {
+        if (this.isEmpty() || this.topDeadline() >= deadline) {
             newTask.next = this.top;
             this.top = newTask;
+            return;
         }
-        displayMessage(`Added Task: ${description}`);
+
+        let temp = this.top.next;
+        let prev = this.top;
+        while (temp && temp.deadline < deadline) {
+            prev = temp;
+            temp = temp.next;
+        }
+        prev.next = newTask;
+        newTask.next = temp;
     }
 
     completeTask(description) {
-        let temp = this.top, prev = null;
-        while (temp && temp.description !== description) {
+        let temp = this.top;
+        let prev = null;
+
+        while (temp) {
+            if (temp.description === description) {
+                if (temp === this.top) {
+                    this.top = this.top.next;
+                } else {
+                    prev.next = temp.next;
+                }
+                this.pushCompleted(temp.description, temp.deadline);
+                return `Task completed: ${description}`;
+            }
             prev = temp;
             temp = temp.next;
         }
-        if (temp) {
-            if (prev) prev.next = temp.next;
-            else this.top = temp.next;
-            temp.completed = true;
-            temp.next = this.completedTop;
-            this.completedTop = temp;
-            displayMessage(`Completed Task: "${description}"`);
-        } else {
-            displayMessage(`Task "${description}" not found!`);
-        }
+        return `Task not found!`;
+    }
+
+    pushCompleted(description, deadline) {
+        const newTask = new Task(description, deadline);
+        newTask.completed = true;
+        newTask.next = this.completedTop;
+        this.completedTop = newTask;
     }
 
     undoCompletedTask() {
-        if (!this.completedTop) return displayMessage("No completed tasks to undo!");
-        const task = this.completedTop;
+        if (!this.completedTop) return "No tasks completed yet!";
+        const undoneTask = this.completedTop;
+        this.addTask(undoneTask.description, undoneTask.deadline);
         this.completedTop = this.completedTop.next;
-        task.next = this.top;
-        this.top = task;
-        task.completed = false;
-        displayMessage(`Undid Task: "${task.description}"`);
+        return `Task undone: ${undoneTask.description}`;
+    }
+
+    displayPlannedTasks() {
+        let temp = this.top;
+        if (this.isEmpty()) return "No tasks planned!";
+        let taskList = "";
+        while (temp) {
+            taskList += `Description: ${temp.description}, Deadline: ${temp.deadline}\n`;
+            temp = temp.next;
+        }
+        return taskList;
+    }
+
+    displayCompletedTasks() {
+        let temp = this.completedTop;
+        if (!temp) return "No tasks completed yet!";
+        let taskList = "";
+        while (temp) {
+            taskList += `Description: ${temp.description}, Deadline: ${temp.deadline}\n`;
+            temp = temp.next;
+        }
+        return taskList;
     }
 
     deleteTask(description) {
-        let temp = this.top, prev = null;
-        while (temp && temp.description !== description) {
+        if (this.isEmpty()) return "No tasks planned!";
+        let temp = this.top;
+        let prev = null;
+
+        while (temp) {
+            if (temp.description === description) {
+                if (temp === this.top) {
+                    this.top = this.top.next;
+                } else {
+                    prev.next = temp.next;
+                }
+                return `Task "${description}" deleted.`;
+            }
             prev = temp;
             temp = temp.next;
         }
-        if (temp) {
-            if (prev) prev.next = temp.next;
-            else this.top = temp.next;
-            displayMessage(`Deleted Task: "${description}"`);
-        } else {
-            displayMessage(`Task "${description}" not found!`);
-        }
-    }
-
-    editTask(description, newDescription, newDeadline) {
-        let temp = this.top;
-        while (temp && temp.description !== description) {
-            temp = temp.next;
-        }
-        if (temp) {
-            temp.description = newDescription;
-            temp.deadline = newDeadline;
-            displayMessage(`Edited Task: "${newDescription}"`);
-        } else {
-            displayMessage(`Task "${description}" not found!`);
-        }
+        return `Task "${description}" not found.`;
     }
 
     clearAllTasks() {
         this.top = null;
-        displayMessage("All tasks cleared!");
-    }
-
-    displayPlannedTasks() {
-        displayTasks(this.top, "Planned Tasks");
-    }
-
-    displayCompletedTasks() {
-        displayTasks(this.completedTop, "Completed Tasks");
+        return "All tasks cleared!";
     }
 
     showUpcomingDeadline() {
-        if (this.isEmpty()) return displayMessage("No tasks in planner!");
-        displayMessage(`Upcoming Task: ${this.top.description} - Deadline: ${this.top.deadline}`);
-    }
-
-    showProgress() {
-        let completedCount = 0, pendingCount = 0;
-        let temp = this.top;
-        while (temp) {
-            pendingCount++;
-            temp = temp.next;
-        }
-        temp = this.completedTop;
-        while (temp) {
-            completedCount++;
-            temp = temp.next;
-        }
-        const total = completedCount + pendingCount;
-        const completedPercent = ((completedCount / total) * 100).toFixed(2);
-        const pendingPercent = ((pendingCount / total) * 100).toFixed(2);
-        displayMessage(`Completed: ${completedPercent}% - Pending: ${pendingPercent}%`);
+        if (this.isEmpty()) return "No tasks planned!";
+        return `Upcoming Task: ${this.top.description}, Deadline: ${this.top.deadline}`;
     }
 }
 
+// Creating the StudyPlanner instance
 const planner = new StudyPlanner();
 
-// Helper functions to manage UI
-function displayMessage(message) {
-    document.getElementById("output").innerText = message;
-}
-
-function displayTasks(head, title) {
-    const tasksDiv = document.getElementById("tasks");
-    tasksDiv.innerHTML = `<h4>${title}:</h4>`;
-    let temp = head;
-    while (temp) {
-        tasksDiv.innerHTML += `<div>${temp.description} - Deadline: ${temp.deadline} - Completed: ${temp.completed}</div>`;
-        temp = temp.next;
-    }
-}
-
-// Functions to interact with StudyPlanner
+// Connecting functions to HTML elements
 function addTask() {
     const description = document.getElementById("description").value;
     const deadline = document.getElementById("deadline").value;
-    planner.addTask(description, deadline);
+    if (description && deadline) {
+        planner.addTask(description, deadline);
+        document.getElementById("output").innerText = `Task added: ${description}`;
+        displayPlannedTasks();
+    }
 }
 
 function completeTask() {
     const description = document.getElementById("description").value;
-    planner.completeTask(description);
-}
-
-function undoCompletedTask() {
-    planner.undoCompletedTask();
-}
-
-function deleteTask() {
-    const description = document.getElementById("description").value;
-    planner.deleteTask(description);
-}
-
-function editTask() {
-    const description = document.getElementById("description").value;
-    const newDesc = prompt("Enter new description:");
-    const newDeadline = prompt("Enter new deadline (YYYY-MM-DD):");
-    planner.editTask(description, newDesc, newDeadline);
-}
-
-function clearAllTasks() {
-    planner.clearAllTasks();
-}
-
-function displayPlannedTasks() {
-    planner.displayPlannedTasks();
-}
-
-function displayCompletedTasks() {
-    planner.displayCompletedTasks();
-}
-
-function showUpcomingDeadline() {
-    planner.showUpcomingDeadline();
-}
-
-function showProgress() {
-    planner.showProgress();
+    const result = planner.completeTask(description);
+    document.getElementById("output").innerText = result;
 }
