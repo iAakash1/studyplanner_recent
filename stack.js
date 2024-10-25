@@ -13,26 +13,25 @@ class StudyPlanner {
         this.completedTop = null;
     }
 
-    // Planner stack
+    // Check if planner stack is empty
     isEmpty() {
         return this.top === null;
     }
 
-    // Planner stack - Top deadline
+    // Get top deadline of the planner stack
     topDeadline() {
-        if (this.isEmpty()) return "zzzz";
-        return this.top.deadline;
+        return this.isEmpty() ? "zzzz" : this.top.deadline;
     }
 
-    // Planner stack - Adding new task to planner
+    // Add a new task to the planner stack
     addTask(description, deadline) {
         const newTask = new Task(description, deadline);
         if (this.isEmpty()) {
             this.top = newTask;
             return;
         }
-        const topDeadline = this.topDeadline();
-        if (topDeadline >= deadline) {
+
+        if (this.topDeadline() >= deadline) {
             newTask.next = this.top;
             this.top = newTask;
             return;
@@ -42,18 +41,17 @@ class StudyPlanner {
         let prev = this.top;
         while (temp) {
             if (temp.deadline >= deadline) {
-                newTask.next = temp.next;
-                prev.next = newTask.next;
+                newTask.next = temp;
+                prev.next = newTask;
                 return;
             }
+            prev = temp;
             temp = temp.next;
-            prev = prev.next;
         }
         prev.next = newTask;
-        newTask.next = null;
     }
 
-    // Planner stack - Displaying the study planner
+    // Display tasks in the planner stack
     displayStack() {
         if (this.isEmpty()) {
             console.log("No tasks planned!");
@@ -61,12 +59,12 @@ class StudyPlanner {
         }
         let temp = this.top;
         while (temp) {
-            console.log(`${temp.description}\t${temp.deadline}`);
+            console.log(temp.description + "\t" + temp.deadline);
             temp = temp.next;
         }
     }
 
-    // Completed stack - Displaying completed tasks
+    // Display completed tasks stack
     displayCompletedStack() {
         if (this.completedTop === null) {
             console.log("No tasks completed yet!");
@@ -74,18 +72,18 @@ class StudyPlanner {
         }
         let temp = this.completedTop;
         while (temp) {
-            console.log(`${temp.description}\t${temp.deadline}`);
+            console.log(temp.description + "\t" + temp.deadline);
             temp = temp.next;
         }
     }
 
-    // Planner stack - Prompting the near deadline task
+    // Prompt near deadline task
     prompt() {
-        console.log(`${this.top.description}\t${this.top.deadline}`);
+        console.log(this.top.description + "\t" + this.top.deadline);
         console.log("Complete this task on priority! Deadline approaching!");
     }
 
-    // Completed stack - Adding a task to completed stack
+    // Push task to completed stack
     compStackPush(description, deadline) {
         const newTask = new Task(description, deadline);
         newTask.completed = true;
@@ -97,37 +95,34 @@ class StudyPlanner {
         this.completedTop = newTask;
     }
 
-    // Planner stack - Popping topmost task
+    // Pop topmost task from planner stack
     popFromStack() {
         if (this.isEmpty()) {
             console.log("Stack is empty! Cannot pop any task.");
-            return "";
+            return ""; 
         }
+
         const del = this.top;
         const poppedDescription = del.description;
         this.top = this.top.next;
+        del.next = null; // Disconnect to help with garbage collection
         return poppedDescription;
     }
 
-    // Completing a task
-    completeTask() {
-        const name = prompt("Enter task completed: ");
+    // Complete a task from planner stack
+    completeTask(name) {
         let temp = this.top;
         let prev = null;
-
         while (temp) {
             if (temp.description === name) {
+                this.compStackPush(temp.description, temp.deadline);
                 if (temp === this.top) {
-                    this.compStackPush(temp.description, temp.deadline);
-                    const poppedDescription = this.popFromStack();
-                    console.log(`Task completed: ${poppedDescription}`);
-                    return;
+                    this.popFromStack();
                 } else {
                     prev.next = temp.next;
-                    this.compStackPush(temp.description, temp.deadline);
-                    console.log(`Task completed: ${name}`);
-                    return;
                 }
+                console.log("Task completed: " + name);
+                return;
             }
             prev = temp;
             temp = temp.next;
@@ -135,7 +130,7 @@ class StudyPlanner {
         console.log("Task not found!");
     }
 
-    // Undo the most recent completed task
+    // Undo a completed task
     undoCompletedTask() {
         if (this.completedTop === null) {
             console.log("No tasks completed yet!");
@@ -144,9 +139,10 @@ class StudyPlanner {
         const del = this.completedTop;
         this.addTask(del.description, del.deadline);
         this.completedTop = this.completedTop.next;
+        del.next = null; // Disconnect to help with garbage collection
     }
 
-    // Checking progress
+    // Display progress
     progress() {
         console.log("Completed tasks:");
         this.displayCompletedStack();
@@ -155,25 +151,23 @@ class StudyPlanner {
 
         let completedCount = 0;
         let pendingCount = 0;
-        let compTemp = this.completedTop;
-        let planTemp = this.top;
-
-        while (compTemp) {
+        let temp = this.completedTop;
+        while (temp) {
             completedCount++;
-            compTemp = compTemp.next;
+            temp = temp.next;
         }
-
-        while (planTemp) {
+        temp = this.top;
+        while (temp) {
             pendingCount++;
-            planTemp = planTemp.next;
+            temp = temp.next;
         }
 
         const total = completedCount + pendingCount;
-        const completedPercentage = (completedCount / total) * 100;
-        const pendingPercentage = (pendingCount / total) * 100;
+        const completedPercent = total > 0 ? (completedCount / total) * 100 : 0;
+        const pendingPercent = total > 0 ? (pendingCount / total) * 100 : 0;
 
-        console.log(`Percentage of completed tasks is: ${completedPercentage}%`);
-        console.log(`Percentage of pending tasks is: ${pendingPercentage}%`);
+        console.log("Percentage of completed tasks is: " + completedPercent);
+        console.log("Percentage of pending tasks is: " + pendingPercent);
     }
 
     // Delete a specific task from planner
@@ -182,55 +176,53 @@ class StudyPlanner {
             console.log("No tasks planned!");
             return;
         }
-
         let temp = this.top;
         let prev = null;
-
         while (temp) {
             if (temp.description === description) {
                 if (temp === this.top) {
                     this.top = this.top.next;
-                    return;
                 } else {
                     prev.next = temp.next;
-                    return;
                 }
+                console.log("Task deleted: " + description);
+                return;
             }
             prev = temp;
             temp = temp.next;
         }
-        console.log(`The task entered "${description}" is not present in the study planner.`);
+        console.log("Task not found in planner.");
     }
 
-    // Edit a task
-    editFromPlanner(description) {
+    // Edit a task in the planner
+    editFromPlanner(description, newDescription, newDeadline) {
         if (this.isEmpty()) {
             console.log("No tasks planned!");
             return;
         }
-
         let temp = this.top;
         while (temp) {
             if (temp.description === description) {
-                temp.description = prompt("Enter new description: ");
-                temp.deadline = prompt("Enter new deadline: ");
+                temp.description = newDescription;
+                temp.deadline = newDeadline;
                 return;
             }
             temp = temp.next;
         }
-        console.log(`The task "${description}" is not present in the study planner. Can't edit it.`);
+        console.log("Task not found in planner. Would you like to add this task? (Y/N):");
+        // Handle add prompt separately as needed
     }
 
-    // Display the upcoming deadline task
+    // Display upcoming deadline task
     displayUpcomingDeadlineTask() {
         if (this.isEmpty()) {
             console.log("No tasks planned!");
-        } else {
-            console.log("Upcoming Deadline Task:");
-            console.log(`Description: ${this.top.description}`);
-            console.log(`Deadline: ${this.top.deadline}`);
-            console.log("Complete this task on priority!");
+            return;
         }
+        console.log("Upcoming Deadline Task:");
+        console.log("Description: " + this.top.description);
+        console.log("Deadline: " + this.top.deadline);
+        console.log("Complete this task on priority!");
     }
 
     // Clear all tasks from planner
@@ -242,54 +234,13 @@ class StudyPlanner {
     }
 }
 
-// Example usage
-const s1 = new StudyPlanner();
-let choice;
-let continueChoice;
+// Usage example (simulating user actions)
 
-do {
-    choice = prompt("Enter choice (1: Add Task, 2: Complete Task, 3: Undo Completed, 4: Show Progress, 5: Display Tasks, 6: Display Completed, 7: Delete Task, 8: Edit Task, 9: Clear Tasks, 10: Display Upcoming Task): ");
-    switch (parseInt(choice)) {
-        case 1:
-            do {
-                const desc = prompt("Enter task description: ");
-                const dl = prompt("Enter task deadline (YYYY-MM-DD): ");
-                s1.addTask(desc, dl);
-                continueChoice = prompt("Do you want to add another task? (Y/N): ");
-            } while (continueChoice === 'Y' || continueChoice === 'y');
-            break;
-        case 2:
-            s1.completeTask();
-            break;
-        case 3:
-            s1.undoCompletedTask();
-            break;
-        case 4:
-            s1.progress();
-            break;
-        case 5:
-            s1.displayStack();
-            break;
-        case 6:
-            s1.displayCompletedStack();
-            break;
-        case 7:
-            const deleteDesc = prompt("Enter description of task to delete: ");
-            s1.deleteFromPlanner(deleteDesc);
-            break;
-        case 8:
-            const editDesc = prompt("Enter description of task to edit: ");
-            s1.editFromPlanner(editDesc);
-            break;
-        case 9:
-            s1.clear();
-            break;
-        case 10:
-            s1.displayUpcomingDeadlineTask();
-            break;
-        default:
-            console.log("Invalid choice! Please try again.");
-    }
-
-    continueChoice = prompt("Do you want to perform another action? (Y/N): ");
-} while (continueChoice === 'Y' || continueChoice === 'y');
+const studyPlanner = new StudyPlanner();
+studyPlanner.addTask("Read Chapter 5", "2024-10-30");
+studyPlanner.addTask("Finish Assignment", "2024-10-25");
+studyPlanner.displayStack();
+studyPlanner.completeTask("Finish Assignment");
+studyPlanner.displayCompletedStack();
+studyPlanner.progress();
+studyPlanner.displayUpcomingDeadlineTask();
