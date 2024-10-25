@@ -1,116 +1,188 @@
-let tasks = [];
-let completedTasks = [];
+class Task {
+    constructor(description, deadline) {
+        this.description = description;
+        this.deadline = deadline;
+        this.completed = false;
+        this.next = null;
+    }
+}
 
-// Add a new task
+class StudyPlanner {
+    constructor() {
+        this.top = null;
+        this.completedTop = null;
+    }
+
+    isEmpty() {
+        return this.top === null;
+    }
+
+    addTask(description, deadline) {
+        const newTask = new Task(description, deadline);
+        if (this.isEmpty()) {
+            this.top = newTask;
+        } else {
+            newTask.next = this.top;
+            this.top = newTask;
+        }
+        displayMessage(`Added Task: ${description}`);
+    }
+
+    completeTask(description) {
+        let temp = this.top, prev = null;
+        while (temp && temp.description !== description) {
+            prev = temp;
+            temp = temp.next;
+        }
+        if (temp) {
+            if (prev) prev.next = temp.next;
+            else this.top = temp.next;
+            temp.completed = true;
+            temp.next = this.completedTop;
+            this.completedTop = temp;
+            displayMessage(`Completed Task: "${description}"`);
+        } else {
+            displayMessage(`Task "${description}" not found!`);
+        }
+    }
+
+    undoCompletedTask() {
+        if (!this.completedTop) return displayMessage("No completed tasks to undo!");
+        const task = this.completedTop;
+        this.completedTop = this.completedTop.next;
+        task.next = this.top;
+        this.top = task;
+        task.completed = false;
+        displayMessage(`Undid Task: "${task.description}"`);
+    }
+
+    deleteTask(description) {
+        let temp = this.top, prev = null;
+        while (temp && temp.description !== description) {
+            prev = temp;
+            temp = temp.next;
+        }
+        if (temp) {
+            if (prev) prev.next = temp.next;
+            else this.top = temp.next;
+            displayMessage(`Deleted Task: "${description}"`);
+        } else {
+            displayMessage(`Task "${description}" not found!`);
+        }
+    }
+
+    editTask(description, newDescription, newDeadline) {
+        let temp = this.top;
+        while (temp && temp.description !== description) {
+            temp = temp.next;
+        }
+        if (temp) {
+            temp.description = newDescription;
+            temp.deadline = newDeadline;
+            displayMessage(`Edited Task: "${newDescription}"`);
+        } else {
+            displayMessage(`Task "${description}" not found!`);
+        }
+    }
+
+    clearAllTasks() {
+        this.top = null;
+        displayMessage("All tasks cleared!");
+    }
+
+    displayPlannedTasks() {
+        displayTasks(this.top, "Planned Tasks");
+    }
+
+    displayCompletedTasks() {
+        displayTasks(this.completedTop, "Completed Tasks");
+    }
+
+    showUpcomingDeadline() {
+        if (this.isEmpty()) return displayMessage("No tasks in planner!");
+        displayMessage(`Upcoming Task: ${this.top.description} - Deadline: ${this.top.deadline}`);
+    }
+
+    showProgress() {
+        let completedCount = 0, pendingCount = 0;
+        let temp = this.top;
+        while (temp) {
+            pendingCount++;
+            temp = temp.next;
+        }
+        temp = this.completedTop;
+        while (temp) {
+            completedCount++;
+            temp = temp.next;
+        }
+        const total = completedCount + pendingCount;
+        const completedPercent = ((completedCount / total) * 100).toFixed(2);
+        const pendingPercent = ((pendingCount / total) * 100).toFixed(2);
+        displayMessage(`Completed: ${completedPercent}% - Pending: ${pendingPercent}%`);
+    }
+}
+
+const planner = new StudyPlanner();
+
+// Helper functions to manage UI
+function displayMessage(message) {
+    document.getElementById("output").innerText = message;
+}
+
+function displayTasks(head, title) {
+    const tasksDiv = document.getElementById("tasks");
+    tasksDiv.innerHTML = `<h4>${title}:</h4>`;
+    let temp = head;
+    while (temp) {
+        tasksDiv.innerHTML += `<div>${temp.description} - Deadline: ${temp.deadline} - Completed: ${temp.completed}</div>`;
+        temp = temp.next;
+    }
+}
+
+// Functions to interact with StudyPlanner
 function addTask() {
     const description = document.getElementById("description").value;
     const deadline = document.getElementById("deadline").value;
-
-    if (description && deadline) {
-        tasks.push({ description, deadline, completed: false });
-        document.getElementById("description").value = "";
-        document.getElementById("deadline").value = "";
-        displayAllTasks();
-    } else {
-        alert("Please fill in both fields.");
-    }
+    planner.addTask(description, deadline);
 }
 
-// Display all tasks
-function displayAllTasks() {
-    const taskList = document.getElementById("task-list");
-    const completedTaskList = document.getElementById("completed-task-list");
-    
-    // Build HTML for tasks
-    const taskHTML = tasks.map((task, index) => `
-        <div class="task-item">
-            <strong>Task ${index + 1}:</strong> ${task.description} <br>
-            <strong>Deadline:</strong> ${task.deadline}
-        </div>
-    `).join('');
-
-    // Build HTML for completed tasks
-    const completedHTML = completedTasks.map((task, index) => `
-        <div class="task-item completed">
-            <strong>Completed Task ${index + 1}:</strong> ${task.description} <br>
-            <strong>Deadline:</strong> ${task.deadline}
-        </div>
-    `).join('');
-
-    // Update the DOM once
-    taskList.innerHTML = taskHTML;
-    completedTaskList.innerHTML = completedHTML;
-}
-
-// Complete a task
 function completeTask() {
-    const taskIndex = parseInt(document.getElementById("complete-task-index").value) - 1;
-    if (taskIndex >= 0 && taskIndex < tasks.length) {
-        const task = tasks[taskIndex];
-        completedTasks.push(task);
-        tasks.splice(taskIndex, 1);
-        alert("Task completed!");
-        displayAllTasks();
-    } else {
-        alert("Invalid task number.");
-    }
+    const description = document.getElementById("description").value;
+    planner.completeTask(description);
 }
 
-// Delete a specific task
+function undoCompletedTask() {
+    planner.undoCompletedTask();
+}
+
 function deleteTask() {
-    const taskIndex = parseInt(document.getElementById("delete-task-index").value) - 1;
-    if (taskIndex >= 0 && taskIndex < tasks.length) {
-        tasks.splice(taskIndex, 1);
-        alert("Task deleted!");
-        displayAllTasks();
-    } else {
-        alert("Invalid task number.");
-    }
+    const description = document.getElementById("description").value;
+    planner.deleteTask(description);
 }
 
-// Edit a task
 function editTask() {
-    const taskIndex = parseInt(document.getElementById("edit-task-index").value) - 1;
-    const newDescription = document.getElementById("new-description").value;
-    const newDeadline = document.getElementById("new-deadline").value;
-
-    if (taskIndex >= 0 && taskIndex < tasks.length) {
-        if (newDescription) tasks[taskIndex].description = newDescription;
-        if (newDeadline) tasks[taskIndex].deadline = newDeadline;
-        alert("Task edited!");
-        displayAllTasks();
-    } else {
-        alert("Invalid task number.");
-    }
+    const description = document.getElementById("description").value;
+    const newDesc = prompt("Enter new description:");
+    const newDeadline = prompt("Enter new deadline (YYYY-MM-DD):");
+    planner.editTask(description, newDesc, newDeadline);
 }
 
-// Clear all tasks
 function clearAllTasks() {
-    tasks = [];
-    completedTasks = [];
-    displayAllTasks();
-    alert("All tasks cleared!");
+    planner.clearAllTasks();
 }
 
-// Show progress
+function displayPlannedTasks() {
+    planner.displayPlannedTasks();
+}
+
+function displayCompletedTasks() {
+    planner.displayCompletedTasks();
+}
+
+function showUpcomingDeadline() {
+    planner.showUpcomingDeadline();
+}
+
 function showProgress() {
-    const totalTasks = tasks.length + completedTasks.length;
-    const completed = completedTasks.length;
-    alert(`You have completed ${completed} out of ${totalTasks} tasks.`);
+    planner.showProgress();
 }
-
-// Debounce function
-function debounce(func, delay) {
-    let timeoutId;
-    return function (...args) {
-        if (timeoutId) {
-            clearTimeout(timeoutId);
-        }
-        timeoutId = setTimeout(() => {
-            func.apply(null, args);
-        }, delay);
-    };
-}
-
-// Event listeners with debounce
-document.querySelector("button").onclick = debounce(addTask, 300);
