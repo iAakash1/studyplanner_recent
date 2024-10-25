@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Planner</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>📚 Study Planner</h1>
+        
+        <!-- Form for Adding a Task -->
+        <div class="task-form">
+            <label for="description">Task Description:</label>
+            <input type="text" id="description" placeholder="Enter task description">
+            
+            <label for="deadline">Task Deadline:</label>
+            <input type="date" id="deadline">
+            
+            <button onclick="addTask()">➕ Add Task</button>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-bar">
+            <span>Progress</span>
+            <div class="bar">
+                <div id="completed-bar" class="completed"></div>
+                <div id="pending-bar" class="pending"></div>
+            </div>
+            <span id="progress-output">0% completed</span>
+        </div>
+
+        <!-- Option Buttons for Different Actions -->
+        <div class="options">
+            <button onclick="completeTask()">✅ Complete Task</button>
+            <button onclick="undoLastCompletedTask()">↩️ Undo Last Completed Task</button>
+            <button onclick="displayAllTasks()">📋 Display All Tasks</button>
+            <button onclick="displayCompletedTasks()">📂 Show Completed Tasks</button>
+            <button onclick="deleteTask()">🗑️ Delete Task</button>
+            <button onclick="editTask()">✏️ Edit Task</button>
+            <button onclick="clearTasks()">🧹 Clear All Tasks</button>
+            <button onclick="displayUpcomingDeadlineTask()">📅 Upcoming Deadline</button>
+        </div>
+
+        <div id="output" class="task-list"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
